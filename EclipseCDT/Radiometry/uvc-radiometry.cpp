@@ -19,7 +19,7 @@ using namespace std;
 using namespace cv;
 
 Mat img;
-std::queue <int> q;
+std::queue<cv::Mat> q;
 
 /* variable declaration */
 struct cb_context {
@@ -58,21 +58,15 @@ fmtVector *uvc_get_frame_formats_by_guid(uvc_device_handle_t *devh, unsigned cha
 }
 
 void frame_callback(uvc_frame_t *frame, void *userptr){
+	Mat Img_Source16Bit_Gray(frame->width, frame->height,CV_16UC1);
 
-	//array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
-	void* array_pointer = new uint[frame->width * frame->height];
-	array_pointer = frame->data;
-
-	//data = np.frombuffer(array_pointer.contents, dtype=np.dtype(np.uint16)).reshape(frame.contents.height, frame.contents.width)
-	uint16_t* data;
-	//data = (uint16_t*)array_pointer;
-	//data = reinterpret_cast<uint16_t*[frame->height,frame->width]>((uint16_t*)array_pointer);
+	Img_Source16Bit_Gray.data = reinterpret_cast<uchar*>(frame->data);
 
 	if(frame->data_bytes != (2 * frame->width * frame->height))
 		return;
 
 	//Check if queue is full
-	/*if(q.size() < )*/ q.push(*data);
+	/*if(q.size() > )*/ q.push(Img_Source16Bit_Gray);
 }
 
 float ktoc(float val){
@@ -80,16 +74,16 @@ float ktoc(float val){
 }
 
 Mat raw_to_8bit(Mat data){
-	Mat colorMat16, greyMat;
+	Mat colorMat16;
 
 	normalize(data, colorMat16, 0, 65535, NORM_MINMAX, CV_16UC1);
 
-	cv::Mat colorMat8(colorMat16, true);
-	colorMat8.convertTo(colorMat8, CV_8U);
+	Mat image_grayscale = colorMat16.clone();
+	image_grayscale.convertTo(image_grayscale, CV_8U, 1 / 256.0);
 
-	cvtColor(colorMat8, greyMat, COLOR_RGB2GRAY);
+	cvtColor(image_grayscale, image_grayscale, COLOR_RGB2GRAY);
 
-	return greyMat;
+	return image_grayscale;
 }
 
 void display_temperature(Mat img, double val_k, Point loc, Scalar color){
@@ -163,7 +157,7 @@ int main(int argc, char **argv) {
 					while(true){
 
 						namedWindow("Lepton Radiometry", cv::WINDOW_NORMAL);
-						resizeWindow("Lepton Radiometry", 640,480);
+						//resizeWindow("Lepton Radiometry", 640,480);
 
 						try{
 							if(!q.empty()) {
@@ -174,13 +168,15 @@ int main(int argc, char **argv) {
 							}
 
 							//resize(data, data_resized, Size(640,480), 0, 0, INTER_NEAREST);
-							minMaxLoc(data_resized, &minVal, &maxVal, &minLoc, &maxLoc);
-							img = raw_to_8bit(data_resized);
-							display_temperature(img, minVal, minLoc, {255, 0, 0});
-							display_temperature(img, maxVal, maxLoc, {0, 0, 255});
+							//minMaxLoc(data_resized, &minVal, &maxVal, &minLoc, &maxLoc);
+							img = raw_to_8bit(data);
+							//display_temperature(img, minVal, minLoc, {255, 0, 0});
+							//display_temperature(img, maxVal, maxLoc, {0, 0, 255});
 
 							// Display frame
-							imshow("Lepton Radiometry", img);
+							if (!img.empty()) {
+								imshow("Lepton Radiometry", img);
+							}
 						}
 						catch (exception& e){
 							cout << "Standard exception: " << e.what() << endl;
