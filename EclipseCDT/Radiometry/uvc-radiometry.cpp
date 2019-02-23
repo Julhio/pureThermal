@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <libuvc/libuvc.h>
+#include "opencv2/core/core.hpp"
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -78,12 +79,12 @@ Mat raw_to_8bit(Mat data){
 
 	normalize(data, colorMat16, 0, 65535, NORM_MINMAX, CV_16UC1);
 
-	Mat image_grayscale = colorMat16.clone();
-	image_grayscale.convertTo(image_grayscale, CV_8U, 1 / 256.0);
+	//Mat image_grayscale = colorMat16.clone();
+	//image_grayscale.convertTo(image_grayscale, CV_8UC1, 1 / 256.0);
 
-	cvtColor(image_grayscale, image_grayscale, COLOR_RGB2GRAY);
+	//cvtColor(image_grayscale, image_grayscale, COLOR_RGB2GRAY);
 
-	return image_grayscale;
+	return colorMat16;
 }
 
 void display_temperature(Mat img, double val_k, Point loc, Scalar color){
