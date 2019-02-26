@@ -59,7 +59,7 @@ fmtVector *uvc_get_frame_formats_by_guid(uvc_device_handle_t *devh, unsigned cha
 }
 
 void frame_callback(uvc_frame_t *frame, void *userptr){
-	Mat Img_Source16Bit_Gray(frame->width, frame->height,CV_16UC1);
+	Mat Img_Source16Bit_Gray(frame->height, frame->width, CV_16UC1);
 
 	Img_Source16Bit_Gray.data = reinterpret_cast<uchar*>(frame->data);
 
@@ -79,12 +79,12 @@ Mat raw_to_8bit(Mat data){
 
 	normalize(data, colorMat16, 0, 65535, NORM_MINMAX, CV_16UC1);
 
-	//Mat image_grayscale = colorMat16.clone();
-	//image_grayscale.convertTo(image_grayscale, CV_8UC1, 1 / 256.0);
+	Mat image_grayscale = colorMat16.clone();
+	image_grayscale.convertTo(image_grayscale, CV_8UC1, 1 / 256.0);
 
 	//cvtColor(image_grayscale, image_grayscale, COLOR_RGB2GRAY);
 
-	return colorMat16;
+	return image_grayscale;
 }
 
 void display_temperature(Mat img, double val_k, Point loc, Scalar color){
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 					while(true){
 
 						namedWindow("Lepton Radiometry", cv::WINDOW_NORMAL);
-						//resizeWindow("Lepton Radiometry", 640,480);
+						resizeWindow("Lepton Radiometry", 640,480);
 
 						try{
 							if(!q.empty()) {
@@ -168,11 +168,11 @@ int main(int argc, char **argv) {
 								//break;
 							}
 
-							//resize(data, data_resized, Size(640,480), 0, 0, INTER_NEAREST);
-							//minMaxLoc(data_resized, &minVal, &maxVal, &minLoc, &maxLoc);
+							resize(data, data_resized, Size(640,480), 0, 0, INTER_NEAREST);
+							minMaxLoc(data_resized, &minVal, &maxVal, &minLoc, &maxLoc);
 							img = raw_to_8bit(data);
-							//display_temperature(img, minVal, minLoc, {255, 0, 0});
-							//display_temperature(img, maxVal, maxLoc, {0, 0, 255});
+							display_temperature(img, minVal, minLoc, {255, 0, 0});
+							display_temperature(img, maxVal, maxLoc, {0, 0, 255});
 
 							// Display frame
 							if (!img.empty()) {
