@@ -77,14 +77,14 @@ float ktoc(float val){
 Mat raw_to_8bit(Mat data){
 	Mat colorMat16;
 
-	normalize(data, colorMat16, 0, 65535, NORM_MINMAX, CV_16UC1);
+	normalize(data, data, 0, 65535, NORM_MINMAX, CV_16UC1);
 
-	Mat image_grayscale = colorMat16.clone();
+	Mat image_grayscale = data.clone();
 	image_grayscale.convertTo(image_grayscale, CV_8UC1, 1 / 256.0);
 
-	//cvtColor(image_grayscale, image_grayscale, COLOR_RGB2GRAY);
+	cvtColor(image_grayscale, colorMat16, COLOR_GRAY2RGB);
 
-	return image_grayscale;
+	return colorMat16;
 }
 
 void display_temperature(Mat img, double val_k, Point loc, Scalar color){
@@ -95,8 +95,8 @@ void display_temperature(Mat img, double val_k, Point loc, Scalar color){
 	int x, y;
 	x = loc.x;
 	y = loc.y;
-	line(img, Point(x - 2, y), Point(x + 2, y), color, 1, LINE_8);
-	line(img, Point(x, y - 2), Point(x, y + 2), color, 1, LINE_8);
+	line(img, Point(x - 2, y), Point(x + 2, y), color, 1, LINE_4);
+	line(img, Point(x, y - 2), Point(x, y + 2), color, 1, LINE_4);
 }
 
 int main(int argc, char **argv) {
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 	uvc_device_handle_t *devh;
 	uvc_stream_ctrl_t ctrl;
 	uvc_error_t res;
-	Mat data, data_resized;
+	Mat data;
 	Point minLoc, maxLoc;
 	double minVal, maxVal;
 	struct cb_context cb_ctx = {0};
@@ -168,11 +168,11 @@ int main(int argc, char **argv) {
 								//break;
 							}
 
-							resize(data, data_resized, Size(640,480), 0, 0, INTER_NEAREST);
-							minMaxLoc(data_resized, &minVal, &maxVal, &minLoc, &maxLoc);
+							resize(data, data, Size(640,480), 0, 0, INTER_NEAREST);
+							minMaxLoc(data, &minVal, &maxVal, &minLoc, &maxLoc);
 							img = raw_to_8bit(data);
-							display_temperature(img, minVal, minLoc, {255, 0, 0});
-							display_temperature(img, maxVal, maxLoc, {0, 0, 255});
+							display_temperature(img, minVal, minLoc, Scalar(255, 0, 0));
+							display_temperature(img, maxVal, maxLoc, Scalar(0, 0, 255));
 
 							// Display frame
 							if (!img.empty()) {
