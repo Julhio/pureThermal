@@ -1,7 +1,7 @@
 static/* linguist-vendored
-*.cpp linguist-language=cpp
-*.cc linguist-language=cpp
-*.hpp linguist-language=cpp
-*.c linguist-language=c
-*.h linguist-language=c
+*.cpp linguist-language=C++
+*.cc linguist-language=C++
+*.hpp linguist-language=C++
+*.c linguist-language=C
+*.h linguist-language=C
 *.py linguist-language=Python
