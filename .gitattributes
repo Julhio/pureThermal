@@ -1,4 +1,3 @@
-static/* linguist-vendored
 *.cpp linguist-language=C++
 *.cc linguist-language=C++
 *.hpp linguist-language=C++
